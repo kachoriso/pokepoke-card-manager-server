@@ -1,18 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**", "prisma/schema.prisma"]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/main.js"
-    }
-  ]
+  "installCommand": "pnpm install",
+  "buildCommand": "npx prisma generate && nest build",
+  "routes": [{ "src": "/(.*)", "dest": "/src/main.js" }],
+  "outputDirectory": "/dist"
 }
