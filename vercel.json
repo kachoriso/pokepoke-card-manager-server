@@ -1,15 +1,18 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json",
-    "builds": [
-      {
-        "src": "dist/main.js",
-        "use": "@vercel/node"
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["dist/**", "prisma/schema.prisma"]
       }
-    ],
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/dist/main.js"
-      }
-    ]
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/main.js"
+    }
+  ]
 }
