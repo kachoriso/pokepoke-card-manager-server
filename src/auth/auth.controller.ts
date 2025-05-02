@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { t_users } from '@prisma/client';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -24,13 +25,19 @@ export class AuthController {
     return createdUser;
   }
 
-  /* --- ログインエンドポイント (今後実装) ---
+  /**
+   * ユーザーログイン
+   * @param loginUserDto email と password
+   * @returns アクセストークン
+   */
   @Post('login')
-  @HttpCode(HttpStatus.OK) // 成功時は 200 OK
-  async login(@Body() loginUserDto: LoginUserDto) { // LoginUserDto も別途作成が必要
-    // return this.authService.login(loginUserDto); // AuthService に login メソッドを実装
+  @HttpCode(HttpStatus.OK) // ログイン成功時は 200 OK
+  async login(@Body() loginUserDto: LoginUserDto) {
+    console.log('Login request body:', loginUserDto);
+    const result = await this.authService.login(loginUserDto);
+    console.log('Login successful, token generated.');
+    return result;
   }
-  */
 
   /* --- 認証が必要なテスト用エンドポイント (今後実装) ---
   @Get('profile')

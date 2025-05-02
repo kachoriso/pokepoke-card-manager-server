@@ -25,9 +25,17 @@ export class UsersService {
    * @returns 見つかったユーザーオブジェクト、または null
    */
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.t_users.findUnique({
-      where: { email }
-    });
+    return this.prisma.t_users.findUnique({ where: { email } });
+  }
+
+  /**
+   * ユーザー名でユーザーを検索する
+   * 登録時の重複チェックやログイン時のユーザー検証で使用
+   * @param usernema 検索するユーザー名
+   * @returns 見つかったユーザーオブジェクト、または null
+   */
+  async findByUsername(username: string): Promise<User | null> {
+    return this.prisma.t_users.findUnique({ where: { username } });
   }
 
   /**
