@@ -8,7 +8,7 @@ import { Request } from 'express';
 
 interface RequestWithUser extends Request {
   user: {
-    userId: string;
+    id: string;
     username: string;
   };
 }
@@ -56,8 +56,8 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: RequestWithUser) {
-    const userId = req.user.userId;
-    console.log(`AuthController: getProfile called for userId: ${userId}`);
+    console.log('req.user in controller:', req.user);
+    const userId = req.user.id;
     return this.authService.getProfile(userId);
   }
 }
