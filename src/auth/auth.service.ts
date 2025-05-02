@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -92,5 +92,22 @@ export class AuthService {
       expiresIn: this.configService.get<string>('JWT_EXPIRATION_TIME') || '60m',
     });
     return { access_token: accessToken };
+  }
+
+  /**
+   * ユーザーIDに基づいてプロファイル情報（パスワード除く）を取得する
+   * @param userId 取得したいユーザーのID (JWTから取得)
+   * @returns パスワードハッシュを除いたユーザー情報
+   */
+  async getProfile(userId: string): Promise<Omit<User, 'password_hash'>> {
+    console.log(`AuthService: Fetching profile for userId: ${userId}`);
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('ユーザーが見つかりませんでした');
+    }
+
+    const { password_hash, ...result } = user;
+    return result;
   }
 }

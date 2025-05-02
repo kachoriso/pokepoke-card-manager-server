@@ -1,12 +1,21 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { t_users } from '@prisma/client';
 import { LoginUserDto } from './dto/login-user.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { Request } from 'express';
+
+interface RequestWithUser extends Request {
+  user: {
+    userId: string;
+    username: string;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   /**
    * ユーザー登録エンドポイント
@@ -39,12 +48,16 @@ export class AuthController {
     return result;
   }
 
-  /* --- 認証が必要なテスト用エンドポイント (今後実装) ---
+  /**
+   * ログイン中のユーザー自身のプロファイル情報を取得する
+   * @param req リクエストオブジェクト (JwtAuthGuard により user 情報が付与される)
+   * @returns ユーザー情報 (パスワードハッシュ除く)
+   */
   @Get('profile')
-  @UseGuards(JwtAuthGuard) // ★ JwtAuthGuard で保護
-  getProfile(@Req() req) {
-    // JwtAuthGuard がリクエストオブジェクトに user を追加する (JwtStrategy の実装による)
-    return req.user;
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: RequestWithUser) {
+    const userId = req.user.userId;
+    console.log(`AuthController: getProfile called for userId: ${userId}`);
+    return this.authService.getProfile(userId);
   }
-  */
 }
