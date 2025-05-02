@@ -30,13 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
      */
     async validate(payload: { sub: string; username: string }): Promise<Omit<User, 'password_hash'>> {
         console.log('JWT Payload in validate:', payload);
-
         const user = await this.usersService.findById(payload.sub);
-
         if (!user) {
             throw new UnauthorizedException('ユーザーが見つかりません。');
         }
-
         const { password_hash, ...result } = user;
         return result;
     }
