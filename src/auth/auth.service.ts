@@ -1,11 +1,12 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { t_users } from '@prisma/client';
+import { t_users as User } from '@prisma/client';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
    * @param registerUserDto 登録情報 (username, email, password)
    * @returns 作成されたユーザー情報 (パスワードハッシュ除く)
    */
-  async register(registerUserDto: RegisterUserDto): Promise<Omit<t_users, 'password_hash'>> {
+  async register(registerUserDto: RegisterUserDto): Promise<Omit<User, 'password_hash'>> {
     const { username, email, password } = registerUserDto;
 
     // 1. メールアドレスが既に登録されていないか確認
@@ -59,39 +60,37 @@ export class AuthService {
   }
 
   /**
-   * ユーザー認証の検証 (主にログイン処理の内部で使用)
-   * @param loginUserDto ログイン情報 (email, password)
+   * 提供されたemailとpasswordでユーザーを検証する
+   * @param loginUserDto email と password
    * @returns 認証成功ならユーザー情報(パスワード除く)、失敗なら null
    */
-  async validateUser(loginUserDto: LoginUserDto): Promise<Omit<t_users, 'password_hash'> | null> {
-    const { email, password } = loginUserDto;
-    const user = await this.usersService.findByEmail(email);
+  async validateUser(loginUserDto: LoginUserDto): Promise<Omit<User, 'password_hash'> | null> {
+    const { usernameOrEmail, password } = loginUserDto;
+    const user = isEmail(usernameOrEmail) ? await this.usersService.findByEmail(usernameOrEmail) : await this.usersService.findByUsername(usernameOrEmail);
 
-    // ユーザーが存在し、かつ提供されたパスワードがDBのハッシュと一致するか検証
     if (user && (await bcrypt.compare(password, user.password_hash))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password_hash, ...result } = user;
-      return result; // 認証成功、パスワードハッシュを除いたユーザー情報を返す
+      return result;
     }
-    return null; // ユーザーが見つからない、またはパスワードが不一致
+    return null;
   }
 
   /**
-   * ログイン処理 (JWT を生成)
-   * @param user 認証済みユーザー情報 (validateUserから受け取る想定)
-   * @returns アクセストークン
+   * ログイン処理を行い、JWT アクセストークンを生成する
+   * @param loginUserDto email と password
+   * @returns アクセストークンを含むオブジェクト
    */
-  async login(user: Omit<t_users, 'password_hash'>): Promise<{ access_token: string }> {
+  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+    const user = await this.validateUser(loginUserDto);
+    if (!user) {
+      // 401 Unauthorized エラーを返す
+      throw new UnauthorizedException('メールアドレスまたはパスワードが正しくありません');
+    }
     const payload = { username: user.username, sub: user.id };
-
-    // JWT を署名して生成
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
       expiresIn: this.configService.get<string>('JWT_EXPIRATION_TIME') || '60m',
     });
-
-    return {
-      access_token: accessToken,
-    };
+    return { access_token: accessToken };
   }
 }
