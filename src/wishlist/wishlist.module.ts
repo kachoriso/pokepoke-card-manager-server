@@ -10,6 +10,6 @@ import { UsersModule } from 'src/users/users.module';
     UsersModule
   ],
   controllers: [WishlistController],
-  providers: [WishlistService],
+  providers: [WishlistService]
 })
-export class WishlistModule {}
+export class WishlistModule { }
