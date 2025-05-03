@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BigIntTransformInterceptor } from './common/interceptors/bigint-transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -52,6 +53,8 @@ async function bootstrap() {
       enableImplicitConversion: true,
     },
   }));
+
+  app.useGlobalInterceptors(new BigIntTransformInterceptor());
 
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
