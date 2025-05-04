@@ -12,7 +12,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
 
   const frontendDevUrl = 'http://localhost:5173';
-  const codespacesOriginPattern = /https:\/\/.*\.app\.github\.dev$/;
+  const codespacesOriginPattern = /^https:\/\/.*-\d+\.app\.github\.dev$/;;
   const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
 
   const allowedOrigins = [
