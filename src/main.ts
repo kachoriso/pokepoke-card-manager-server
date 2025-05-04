@@ -12,14 +12,18 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
 
   const frontendDevUrl = 'http://localhost:5173';
-  const codespacesOriginPattern = /^https:\/\/.*-\d+\.app\.github\.dev$/;;
+  const codespacesOriginPattern = /^https:\/\/.*-5173\.app\.github\.dev$/;
   const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
+
+  console.log('[CORS Setup] FRONTEND_URL from env:', productionFrontendUrl);
 
   const allowedOrigins = [
     frontendDevUrl,
     codespacesOriginPattern,
     productionFrontendUrl
   ].filter(Boolean);
+
+  console.log('[CORS Setup] Allowed Origins:', allowedOrigins.map(o => o.toString()));
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -36,8 +40,10 @@ async function bootstrap() {
       }
 
       if (allowed) {
+        console.log('[CORS Check] Allowed for origin:', origin);
         callback(null, true);
       } else {
+        console.error('[CORS Check] Blocked for origin:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
