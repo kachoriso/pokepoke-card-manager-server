@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "src/main.ts",
       "use": "@vercel/node",
       "config": {
         "includeFiles": ["dist/**", "prisma/schema.prisma"]
@@ -12,7 +12,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "dist/main.js"
+      "destination": "src/main.js"
     }
   ],
   "headers": [
