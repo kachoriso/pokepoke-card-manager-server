@@ -88,17 +88,17 @@ export class InventoryService {
 
         const result = await this.prisma.$queryRaw<[{ count: bigint }]>`
             SELECT COUNT(*)
-            FROM t_wishlist_items w
-            WHERE w.user_id != ${currentUserId}
-                AND w.done = false
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM t_inventory_items i
-                    WHERE i.user_id = ${currentUserId}
-                      AND i.pack_id = w.pack_id
-                      AND i.card_no = w.card_no
-                      AND i.quantity > 0
-                );
+            FROM public.t_wishlist_items w
+            WHERE w.user_id != ${currentUserId}::uuid
+            AND w.done = false
+            AND NOT EXISTS (
+                SELECT 1
+                FROM public.t_inventory_items i
+                WHERE i.user_id = ${currentUserId}::uuid
+                AND i.pack_id = w.pack_id
+                AND i.card_no = w.card_no
+                AND i.quantity > 0
+            );
         `;
 
         const count = result.length > 0 ? Number(result[0].count) : 0;
