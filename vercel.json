@@ -6,7 +6,6 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "dist/**",
           "prisma/schema.prisma"
         ]
       }
@@ -16,17 +15,11 @@
     {
       "src": "/(.*)",
       "headers": {
-        "Access-Control-Allow-Origin": "*"
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       },
-      "dest": "src/main.ts",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-      ]
+      "dest": "src/main.ts"
     }
   ]
 }
