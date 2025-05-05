@@ -1,4 +1,3 @@
-// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -21,13 +20,11 @@ async function bootstrap() {
     productionFrontendUrl,
   ].filter(Boolean);
 
-  console.log('[Manual CORS] Allowed Origins:', allowedOrigins.map(o => o.toString()));
-
   app.use((req, res, next) => {
     const requestOrigin = req.headers.origin;
     let originToAllow = '';
 
-    if (requestOrigin && allowedOrigins.some(o => typeof o === 'string' ? o === requestOrigin : o.test(requestOrigin))) {
+    if (requestOrigin && allowedOrigins.some(o => typeof o === 'string' ? o === requestOrigin : o?.test(requestOrigin))) {
       originToAllow = requestOrigin;
     }
 
@@ -41,7 +38,7 @@ async function bootstrap() {
     if (req.method === 'OPTIONS') {
       console.log('[Manual OPTIONS] Handling preflight for origin:', requestOrigin);
       res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+      res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token, locale');
       res.header('Access-Control-Allow-Private-Network', 'true');
       return res.sendStatus(204);
     }

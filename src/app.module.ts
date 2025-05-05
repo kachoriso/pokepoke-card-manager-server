@@ -1,4 +1,3 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,13 +7,13 @@ import { AuthModule } from './auth/auth.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { PacksModule } from './packs/packs.module';
 import { RaritiesModule } from './rarities/rarities.module';
-// import { UsersModule } from './users/users.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
-    // UsersModule,
+    UsersModule,
     AuthModule,
     WishlistModule,
     PacksModule,

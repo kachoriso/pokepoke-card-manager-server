@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { CreateWishlistItemDto } from './dto/create-wishlist-item.dto';
@@ -70,6 +70,36 @@ export class WishlistService {
     });
 
     return groupedResult;
+  }
+
+  /**
+   * 指定されたIDのウィッシュリストアイテムを完了済みにする (done = true)
+   * @param itemId 完了にするアイテムのID (数値)
+   * @param userId リクエスト元のユーザーID (認証済みユーザー)
+   * @returns 更新されたウィッシュリストアイテム
+   */
+  async markAsDone(itemId: number, userId: string): Promise<t_wishlist_items> {
+    console.log(`WishlistService: Marking item ${itemId} as done for user ${userId}`);
+
+    const wishlistItem = await this.prisma.t_wishlist_items.findUnique({
+      where: { id: BigInt(itemId) }
+    });
+
+    if (!wishlistItem) {
+      throw new NotFoundException(`ID ${itemId} のウィッシュリストアイテムが見つかりません。`);
+    }
+
+    if (wishlistItem.user_id !== userId) {
+      throw new ForbiddenException('このアイテムを更新する権限がありません。');
+    }
+
+    const updatedItem = await this.prisma.t_wishlist_items.update({
+      where: { id: BigInt(itemId) },
+      data: { done: true }
+    });
+
+    console.log(`WishlistService: Item ${itemId} marked as done.`);
+    return updatedItem;
   }
 
   /**
