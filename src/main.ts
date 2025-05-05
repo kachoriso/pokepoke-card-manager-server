@@ -11,38 +11,46 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') || 3000;
 
-  const frontendDevUrl = 'http://localhost:5173';
-  const codespacesOriginPattern = /https:\/\/.*\.app\.github\.dev$/;
-  const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
+  // const frontendDevUrl = 'http://localhost:5173';
+  // const codespacesOriginPattern = /https:\/\/.*\.app\.github\.dev$/;
+  // const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
 
-  const allowedOrigins = [
-    frontendDevUrl,
-    codespacesOriginPattern,
-    productionFrontendUrl
-  ].filter(Boolean);
+  // const allowedOrigins = [
+  //   frontendDevUrl,
+  //   codespacesOriginPattern,
+  //   productionFrontendUrl
+  // ].filter(Boolean);
 
+  // app.enableCors({
+  //   origin: (origin, callback) => {
+  //     let allowed = false;
+  //     if (!origin || allowedOrigins.some(o => {
+  //       if (typeof o === 'string') {
+  //         return o === origin;
+  //       } else if (o instanceof RegExp) {
+  //         return o.test(origin);
+  //       }
+  //       return false;
+  //     })) {
+  //       allowed = true;
+  //     }
+
+  //     if (allowed) {
+  //       console.log('[CORS Check] Allowed for origin:', origin);
+  //       callback(null, true);
+  //     } else {
+  //       console.error('[CORS Check] Blocked for origin:', origin);
+  //       callback(new Error('Not allowed by CORS'));
+  //     }
+  //   },
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //   credentials: true,
+  // });
+
+  
+  // TODO origin の設定
   app.enableCors({
-    origin: (origin, callback) => {
-      let allowed = false;
-      if (!origin || allowedOrigins.some(o => {
-        if (typeof o === 'string') {
-          return o === origin;
-        } else if (o instanceof RegExp) {
-          return o.test(origin);
-        }
-        return false;
-      })) {
-        allowed = true;
-      }
-
-      if (allowed) {
-        console.log('[CORS Check] Allowed for origin:', origin);
-        callback(null, true);
-      } else {
-        console.error('[CORS Check] Blocked for origin:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
