@@ -1,7 +1,9 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Put, HttpCode, HttpStatus, Body } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
+import { UpsertInventoryItemDto } from './dto/upsert-inventory-item.dto';
+import { t_inventory_items } from '@prisma/client';
 // import { InventoryFormItem } from 'src/types'; // ★ レスポンス用の型定義
 
 interface RequestWithUser extends Request {
@@ -11,7 +13,7 @@ interface RequestWithUser extends Request {
 @Controller('inventory')
 @UseGuards(JwtAuthGuard)
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(private readonly inventoryService: InventoryService) { }
 
   /**
    * 所持登録画面用のアイテムリストを取得する
@@ -23,7 +25,20 @@ export class InventoryController {
     return this.inventoryService.getInventoryFormItems(currentUserId);
   }
 
-  // --- 所持数登録/更新エンドポイント (今後実装) ---
-  // @Put('item') または @Post()
-  // async upsertItem(@Req() req: RequestWithUser, @Body() dto: UpsertInventoryItemDto) { ... }
+  /**
+   * ログインユーザーの特定のカードの所持枚数を登録/更新する
+   * @param req リクエストオブジェクト (ログインユーザーID取得用)
+   * @param upsertInventoryItemDto リクエストボディ (登録/更新データ)
+   * @returns 作成/更新された inventory アイテム
+   */
+  @Put()
+  @HttpCode(HttpStatus.OK)
+  async upsertItem(
+    @Req() req: RequestWithUser,
+    @Body() upsertInventoryItemDto: UpsertInventoryItemDto,
+  ): Promise<t_inventory_items> {
+    const userId = req.user.userId;
+    console.log(`InventoryController: User ${userId} upserting item:`, upsertInventoryItemDto);
+    return this.inventoryService.upsertItem(userId, upsertInventoryItemDto);
+  }
 }

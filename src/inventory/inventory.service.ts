@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { InventoryFormItem } from 'src/types';
+import { UpsertInventoryItemDto } from './dto/upsert-inventory-item.dto';
+import { t_inventory_items } from '@prisma/client';
 
 @Injectable()
 export class InventoryService {
@@ -76,6 +78,45 @@ export class InventoryService {
         return formItems;
     }
 
-    // --- 所持数登録/更新メソッド (今後実装) ---
-    // async upsertInventoryItem(userId: string, dto: UpsertInventoryItemDto) { ... }
+    /**
+   * ログインユーザーの特定のカードの所持枚数を登録または更新する (Upsert)
+   * @param userId ログイン中のユーザーID
+   * @param dto 登録/更新するカード情報と枚数
+   * @returns 作成または更新された inventory アイテム
+   */
+    async upsertItem(userId: string, dto: UpsertInventoryItemDto): Promise<t_inventory_items> {
+        const { pack_id, card_no, quantity, card_name, rarity_id, image_url } = dto;
+
+        console.log(`InventoryService: Upserting item for user ${userId}:`, dto);
+
+        try {
+            const upsertedItem = await this.prisma.t_inventory_items.upsert({
+                where: {
+                    user_id_pack_id_card_no: {
+                        user_id: userId,
+                        pack_id: pack_id,
+                        card_no: card_no
+                    }
+                },
+                update: { quantity: quantity },
+                create: {
+                    user_id: userId,
+                    pack_id: pack_id,
+                    card_no: card_no,
+                    quantity: quantity,
+                    card_name: card_name,
+                    rarity_id: rarity_id,
+                    image_url: image_url
+                },
+            });
+            console.log('Inventory item upserted:', upsertedItem);
+            return upsertedItem;
+        } catch (error) {
+            if (error.code === 'P2003') {
+                throw new BadRequestException('指定されたパックまたはレアリティが存在しません。');
+            }
+            console.error('Failed to upsert inventory item:', error);
+            throw error;
+        }
+    }
 }
