@@ -26,6 +26,18 @@ export class InventoryController {
   }
 
   /**
+   * ログインユーザーが所持数を登録していない、他のユーザーの欲しいものリストの件数を取得する
+   * @param req リクエストオブジェクト (ログインユーザーID取得用)
+   * @returns 未登録件数を含むオブジェクト { count: number }
+   */
+  @Get('unregistered-count')
+  async getUnregisteredCount(@Req() req: RequestWithUser): Promise<{ count: number }> {
+    const currentUserId = req.user.userId;
+    console.log(`InventoryController: Getting unregistered count for user ${currentUserId}`);
+    return this.inventoryService.getUnregisteredCount(currentUserId);
+  }
+
+  /**
    * ログインユーザーの特定のカードの所持枚数を登録/更新する
    * @param req リクエストオブジェクト (ログインユーザーID取得用)
    * @param upsertInventoryItemDto リクエストボディ (登録/更新データ)

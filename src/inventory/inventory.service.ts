@@ -79,11 +79,40 @@ export class InventoryService {
     }
 
     /**
-   * ログインユーザーの特定のカードの所持枚数を登録または更新する (Upsert)
-   * @param userId ログイン中のユーザーID
-   * @param dto 登録/更新するカード情報と枚数
-   * @returns 作成または更新された inventory アイテム
-   */
+     * ログインユーザーが所持数を登録していない、他のユーザーの欲しいものリストアイテムの件数を取得する
+     * @param currentUserId ログイン中のユーザーID
+     * @returns 未登録件数
+     */
+    async getUnregisteredCount(currentUserId: string): Promise<{ count: number }> {
+        console.log(`InventoryService: Getting unregistered count for user ${currentUserId}`);
+
+        const result = await this.prisma.$queryRaw<[{ count: bigint }]>`
+            SELECT COUNT(*)
+            FROM public.t_wishlist_items w
+            WHERE w.user_id != ${currentUserId}
+                AND w.done = false
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM public.t_inventory_items i
+                    WHERE i.user_id = ${currentUserId}
+                      AND i.pack_id = w.pack_id
+                      AND i.card_no = w.card_no
+                      AND i.quantity > 0 -- 0枚より多い在庫が存在「しない」もの = 未入力 or 在庫0
+                );
+        `;
+
+        const count = result.length > 0 ? Number(result[0].count) : 0;
+
+        console.log(`InventoryService: Unregistered count for user ${currentUserId}: ${count}`);
+        return { count };
+    }
+
+    /**
+     * ログインユーザーの特定のカードの所持枚数を登録または更新する (Upsert)
+     * @param userId ログイン中のユーザーID
+     * @param dto 登録/更新するカード情報と枚数
+     * @returns 作成または更新された inventory アイテム
+     */
     async upsertItem(userId: string, dto: UpsertInventoryItemDto): Promise<t_inventory_items> {
         const { pack_id, card_no, quantity, card_name, rarity_id, image_url } = dto;
 
