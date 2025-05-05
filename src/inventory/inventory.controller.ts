@@ -7,7 +7,10 @@ import { t_inventory_items } from '@prisma/client';
 // import { InventoryFormItem } from 'src/types'; // ★ レスポンス用の型定義
 
 interface RequestWithUser extends Request {
-  user: { userId: string; username: string; };
+  user: {
+    id: string;
+    username: string;
+  };
 }
 
 @Controller('inventory')
@@ -21,7 +24,7 @@ export class InventoryController {
    */
   @Get('form-items')
   async getFormItems(@Req() req: RequestWithUser) {
-    const currentUserId = req.user.userId;
+    const currentUserId = req.user.id;
     return this.inventoryService.getInventoryFormItems(currentUserId);
   }
 
@@ -32,7 +35,7 @@ export class InventoryController {
    */
   @Get('unregistered-count')
   async getUnregisteredCount(@Req() req: RequestWithUser): Promise<{ count: number }> {
-    const currentUserId = req.user.userId;
+    const currentUserId = req.user.id;
     console.log(`InventoryController: Getting unregistered count for user ${currentUserId}`);
     return this.inventoryService.getUnregisteredCount(currentUserId);
   }
@@ -49,7 +52,7 @@ export class InventoryController {
     @Req() req: RequestWithUser,
     @Body() upsertInventoryItemDto: UpsertInventoryItemDto,
   ): Promise<t_inventory_items> {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     console.log(`InventoryController: User ${userId} upserting item:`, upsertInventoryItemDto);
     return this.inventoryService.upsertItem(userId, upsertInventoryItemDto);
   }
