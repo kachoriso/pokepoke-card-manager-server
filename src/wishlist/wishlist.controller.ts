@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Req, ParseUUIDPipe, Post, HttpCode, HttpStatus, Body } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Req, ParseUUIDPipe, Post, HttpCode, HttpStatus, Body, Patch, ParseIntPipe } from '@nestjs/common';
 import { WishlistService } from './wishlist.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request } from 'express';
@@ -24,6 +24,23 @@ export class WishlistController {
   ) {
     const currentUserId = req.user.id;
     return this.wishlistService.getGroupedWishlist(targetUserId, currentUserId);
+  }
+
+  /**
+   * 指定されたIDのウィッシュリストアイテムを完了済みにする
+   * @param itemId パスパラメータから取得するアイテムID
+   * @param req リクエストオブジェクト (ログインユーザーID取得用)
+   * @returns 更新されたウィッシュリストアイテム
+   */
+  @Patch(':itemId/done')
+  @HttpCode(HttpStatus.OK)
+  async markAsDone(
+    @Param('itemId', ParseIntPipe) itemId: number,
+    @Req() req: RequestWithUser,
+  ): Promise<t_wishlist_items> {
+    const userId = req.user.id;
+    console.log(`WishlistController: User ${userId} marking item ${itemId} as done.`);
+    return this.wishlistService.markAsDone(itemId, userId);
   }
 
   @Post()
