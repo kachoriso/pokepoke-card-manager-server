@@ -11,48 +11,42 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') || 3000;
 
-  // const frontendDevUrl = 'http://localhost:5173';
-  // const codespacesOriginPattern = /https:\/\/.*\.app\.github\.dev$/;
-  // const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
+  const frontendDevUrl = 'http://localhost:5173';
+  const codespacesOriginPattern = /^https:\/\/.*-5173\.app\.github\.dev$/;
+  const productionFrontendUrl = configService.get<string>('FRONTEND_URL');
 
-  // const allowedOrigins = [
-  //   frontendDevUrl,
-  //   codespacesOriginPattern,
-  //   productionFrontendUrl
-  // ].filter(Boolean);
+  const allowedOrigins = [
+    frontendDevUrl,
+    codespacesOriginPattern,
+    productionFrontendUrl,
+  ].filter(Boolean);
 
-  // app.enableCors({
-  //   origin: (origin, callback) => {
-  //     let allowed = false;
-  //     if (!origin || allowedOrigins.some(o => {
-  //       if (typeof o === 'string') {
-  //         return o === origin;
-  //       } else if (o instanceof RegExp) {
-  //         return o.test(origin);
-  //       }
-  //       return false;
-  //     })) {
-  //       allowed = true;
-  //     }
+  console.log('[Manual CORS] Allowed Origins:', allowedOrigins.map(o => o.toString()));
 
-  //     if (allowed) {
-  //       console.log('[CORS Check] Allowed for origin:', origin);
-  //       callback(null, true);
-  //     } else {
-  //       console.error('[CORS Check] Blocked for origin:', origin);
-  //       callback(new Error('Not allowed by CORS'));
-  //     }
-  //   },
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  //   credentials: true,
-  // });
+  app.use((req, res, next) => {
+    const requestOrigin = req.headers.origin;
+    let originToAllow = '';
 
-  
-  // TODO origin の設定
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+    if (requestOrigin && allowedOrigins.some(o => typeof o === 'string' ? o === requestOrigin : o.test(requestOrigin))) {
+      originToAllow = requestOrigin;
+    }
+
+    if (originToAllow) {
+      res.header('Access-Control-Allow-Origin', originToAllow);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    } else if (requestOrigin) {
+      console.warn(`[Manual CORS] Origin ${requestOrigin} is not in allowedOrigins.`);
+    }
+
+    if (req.method === 'OPTIONS') {
+      console.log('[Manual OPTIONS] Handling preflight for origin:', requestOrigin);
+      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+      res.header('Access-Control-Allow-Private-Network', 'true');
+      return res.sendStatus(204);
+    }
+
+    next();
   });
 
   app.useGlobalPipes(new ValidationPipe({
@@ -63,7 +57,6 @@ async function bootstrap() {
       enableImplicitConversion: true,
     },
   }));
-
   app.useGlobalInterceptors(new BigIntTransformInterceptor());
 
   await app.listen(port, '0.0.0.0');
