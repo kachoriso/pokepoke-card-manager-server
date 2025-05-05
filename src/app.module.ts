@@ -8,6 +8,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { PacksModule } from './packs/packs.module';
 import { RaritiesModule } from './rarities/rarities.module';
 import { UsersModule } from './users/users.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     WishlistModule,
     PacksModule,
-    RaritiesModule
+    RaritiesModule,
+    InventoryModule
   ],
   controllers: [AppController],
   providers: [AppService],
