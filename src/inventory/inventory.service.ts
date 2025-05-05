@@ -97,7 +97,7 @@ export class InventoryService {
                     WHERE i.user_id = ${currentUserId}
                       AND i.pack_id = w.pack_id
                       AND i.card_no = w.card_no
-                      AND i.quantity > 0 -- 0枚より多い在庫が存在「しない」もの = 未入力 or 在庫0
+                      AND i.quantity > 0
                 );
         `;
 
