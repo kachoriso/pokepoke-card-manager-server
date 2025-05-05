@@ -1,28 +1,28 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "src/main.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**"]
+    "version": 2,
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node",
+        "config": {
+          "includeFiles": ["prisma/schema.prisma"]
+        }
       }
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "src/main.js"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/auth/profile",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate" },
-        { "key": "Pragma", "value": "no-cache" },
-        { "key": "Expires", "value": "0" }
-      ]
-    }
-  ]
-}
+    ],
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "dist/main.js"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate" },
+          { "key": "Pragma", "value": "no-cache" },
+          { "key": "Expires", "value": "0" }
+        ]
+      }
+    ]
+  }
