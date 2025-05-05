@@ -2,17 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/main.ts",
+      "src": "package.json",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/**"]
+        "includeFiles": ["prisma/schema.prisma"]
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
       "src": "/(.*)",
-      "dest": "src/main.ts"
+      "dest": "dist/main.ts"
     }
   ],
   "headers": [
