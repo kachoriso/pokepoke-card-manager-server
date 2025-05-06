@@ -67,14 +67,6 @@ export class InventoryService {
             };
         });
 
-        formItems.sort((a, b) => {
-            const aQuantity = a.my_quantity ?? 0;
-            const bQuantity = b.my_quantity ?? 0;
-            if (aQuantity === 0 && bQuantity !== 0) return -1;
-            if (aQuantity !== 0 && bQuantity === 0) return 1;
-            return 0;
-        });
-
         return formItems;
     }
 
@@ -89,16 +81,12 @@ export class InventoryService {
         const result = await this.prisma.$queryRaw<[{ count: bigint }]>`
             SELECT COUNT(*)
             FROM public.t_wishlist_items w
+            LEFT JOIN public.t_inventory_items i ON w.pack_id = i.pack_id
+                AND w.card_no = i.card_no
+                AND i.user_id = ${currentUserId}::uuid
             WHERE w.user_id != ${currentUserId}::uuid
-            AND w.done = false
-            AND NOT EXISTS (
-                SELECT 1
-                FROM public.t_inventory_items i
-                WHERE i.user_id = ${currentUserId}::uuid
-                AND i.pack_id = w.pack_id
-                AND i.card_no = w.card_no
-                AND i.quantity > 0
-            );
+                AND w.done = false
+                AND i.id IS NULL;
         `;
 
         const count = result.length > 0 ? Number(result[0].count) : 0;
